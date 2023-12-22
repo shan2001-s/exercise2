@@ -10,16 +10,11 @@
     <h1>Token Transfer</h1>
 
     <label for="tokenSelector">Select Token:</label>
-    <select id="tokenSelector">
-        <option value="Token1">Sandra (SD)</option>
-        <option value="Token2">Stand Tk (STK)</option>
-        <option value="Token3">AyarWadi (AYA)</option>
+    <select id="tokenSelector" onchange="updateGasEstimation()">
+        <option value="Token1" selected >Sandra (SD)</option>
+        <option value="Token2"  >Stand Tk (STK)</option>
+        <option value="Token3" >AyarWadi (AYA)</option>
     </select>
-
-    <br>
-
-    <label for="amountInput">Enter Amount:</label>
-    <input type="number" id="amountInput" placeholder="Amount">
 
     <br>
 
@@ -28,63 +23,17 @@
 
     <br>
 
-    <button onclick="transferToken()" >Transfer</button>
+    <div id="gasEstimation">
+        <p>Gas (estimated): <span id="gasValue">-</span> SepoliaETH</p>
+        <p>Estimated Time: <span id="timeValue">-</span></p>
+        <p>Cost in USD: <span id="costValue">-</span></p>
+    </div>
 
-    <script defer>
-        async function transferToken() {
-            console.log("aa");
-            const tokenName = document.getElementById("tokenSelector").value;
-            const amount = document.getElementById("amountInput").value;
-            const recipientAddress = document.getElementById("addressInput").value;
+    <br>
 
-            // Initialize Web3.js
-            if (window.ethereum) {
-                window.web3 = new Web3(ethereum);
-                try {
-                    // Request account access if needed
-                    await ethereum.enable();
-                } catch (error) {
-                    console.error(error);
-                }
-            } else if (window.web3) {
-                window.web3 = new Web3(web3.currentProvider);
-            } else {
-                console.error("Non-Ethereum browser detected. You should consider trying MetaMask!");
-                return;
-            }
+    <button onclick="transferToken()">Transfer</button>
 
-            let tokenABI, tokenAddress;
-
-            if (tokenName === "Token1") {
-                const { Token1ABI, Token1Address } = await import('./Token1.js');
-                tokenABI = Token1ABI;
-                tokenAddress = Token1Address;
-            } else if (tokenName === "Token2") {
-                const { Token2ABI, Token2Address } = await import('./Token2.js');
-                tokenABI = Token2ABI;
-                tokenAddress = Token2Address;
-            } else if (tokenName === "Token3") {
-                // Add import for Token3.js if needed
-            } else {
-                console.error("Invalid token selection");
-                return;
-            }
-
-            const contract = new web3.eth.Contract(tokenABI, tokenAddress);
-
-            const accounts = await web3.eth.getAccounts();
-            const senderAddress = accounts[0];
-
-            try {
-                // Perform the token transfer
-                const tx = await contract.methods.transfer(recipientAddress, amount).send({ from: senderAddress });
-                console.log("Transaction Hash:", tx.transactionHash);
-                alert("Token transfer successful!");
-            } catch (error) {
-                console.error("Error transferring tokens:", error);
-                alert("Token transfer failed. Please check the console for details.");
-            }
-        }
+    <script defer src="index.js">
     </script>
 </body>
 </html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Transfer Estimation</title>
+</head>
+<body>
+
+  <label for="tokenSelector">Select Token:</label>
+  <select id="tokenSelector">
+    <option value="Token1">Token 1</option>
+    <!-- Add options for other tokens if needed -->
+  </select>
+
+  <br><br>
+
+  <label for="toAddress">To Address:</label>
+  <input type="text" id="toAddress" placeholder="Recipient's Address">
+
+  <br><br>
+
+  <label for="transferAmount">Transfer Amount:</label>
+  <input type="text" id="transferAmount" placeholder="Amount to Transfer">
+
+  <br><br>
+
+  <button onclick="estimateTransfer()">Estimate Transfer</button>
+
+  <div id="result"></div>
+
+  <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
+  <script src="Token1.js"></script>
+  <script>
+    async function estimateTransfer() {
+      const selectedToken = document.getElementById('tokenSelector').value;
+
+      let tokenContract;
+      let contractAddress;
+      let contractABI;
+
+      switch (selectedToken) {
+        case 'Token1':
+          contractAddress = Token1Address;
+          contractABI = Token1ABI;
+          break;
+        // Add cases for other tokens if needed
+
+        default:
+          alert('Invalid token selection');
+          return;
+      }
+
+      // Connect to an Ethereum node (you can use Infura or any other provider)
+      const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/699481de92e54cf98cf36242de4152e7');
+
+      // Set up a signer with your wallet's private key or use MetaMask
+      const signer = new ethers.Wallet('cc34e51f46604a2c91a6a63cdf992613', provider);
+
+      // Connect to the selected token contract
+      tokenContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+      // Get recipient's address and transfer amount
+      const toAddress = document.getElementById('toAddress').value;
+      const transferAmount = ethers.utils.parseUnits(document.getElementById('transferAmount').value, 'ether');
+
+      // Estimate gas cost
+      const estimateGas = await tokenContract.estimateGas.transfer(toAddress, transferAmount);
+
+      // Get gas price from the provider
+      const gasPrice = await provider.getGasPrice();
+
+      // Calculate cost in ETH
+      const costInETH = estimateGas.mul(gasPrice);
+
+      // Convert cost to USD (you can use an API to get the current ETH to USD rate)
+      const ethToUsdRate = 4000; // Replace with the current rate
+      const costInUSD = costInETH.mul(ethers.utils.parseEther(ethToUsdRate.toString()));
+
+      // Display the result
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = `
+        <p>Gas (estimated): ${ethers.utils.formatUnits(estimateGas, 'gwei')} SepoliaETH</p>
+        <p>Estimated Time: ${estimateGas.toNumber() * 15} seconds</p>
+        <p>Cost in USD: ${ethers.utils.formatUnits(costInUSD, 'ether')} USD</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
